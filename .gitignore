@@ -18,3 +18,7 @@ buildNumber.properties
 
 # Documentos del plan
 *.pdf
+
+# Base de datos local H2
+*.mv.db
+*.trace.db

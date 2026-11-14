@@ -2,6 +2,15 @@
 
 Sistema de gestión de eventos universitarios desarrollado en **Java 21**, **JavaFX 21**, **JUnit 5** y **H2 Database**, siguiendo **Arquitectura Limpia** y **Patrones GRASP**.
 
+## Integrantes del Equipo
+
+| Rol | Integrante | Responsabilidad Principal |
+| --- | --- | --- |
+| **Integrante 1** | Julián David Fernandez Ruiz | Configuración Maven, pruebas base, `Reserva`, `Asistencia`, `EstadoReserva`, puertos y CU1 (`ConsultarCupos` + `PantallaCupos`). |
+| **Integrante 2** | Juan Sebastian Correa Aguilera | `Evento`, `RepositorioEventosEnMemoria`, `RelojDelSistema` y CU2 (`ReservarEntrada` + `PantallaReserva`). |
+| **Integrante 3** | Diego Mauricio Lancheros Molina | Edición de aforo/datos en `Evento`, CU3 (`EditarEvento` + `PantallaEvento` + `estilos.css`), `App` inicial y `Launcher`. |
+| **Integrante 4** | Youbry Camilo Mendoza Martínez | CU4 (`RegistrarIngreso` + `PantallaIngreso`), persistencia relacional H2 (`schema.sql`, `RepositorioEventosH2`), transición a H2 en `App` y documentación. |
+
 ## Arquitectura y Paquetes
 
 | Anillo | Paquete | Responsabilidad |
@@ -18,12 +27,29 @@ Sistema de gestión de eventos universitarios desarrollado en **Java 21**, **Jav
 1. **CU1 · Consultar cupos (`ConsultarCupos`)**: calcula `aforo - bloqueados - confirmadas - pendientes vigentes` usando el puerto `Reloj`, sin guardar cambios.
 2. **CU2 · Reservar y confirmar (`ReservarEntrada`)**: crea reservas pendientes con plazo de 10 minutos y permite confirmarlas dentro del plazo.
 3. **CU3 · Editar evento (`EditarEvento`)**: actualiza nombre, fecha, lugar y aforo, validando que el nuevo aforo no sea menor que los cupos ocupados (incluyendo el conteo en el mensaje de error).
-4. **CU4 · Registrar ingreso QR (`RegistrarIngreso`)**: registra una única asistencia por reserva en estado `CONFIRMADA` usando la hora del puerto `Reloj`.
+4. **CU4 · Registrar ingreso QR (`RegistrarIngreso`)**: registra una única asistencia por reserva en estado `CONFIRMADA` usando la hora del puerto `Reloj`, recibiendo el código QR como `String`.
 
-## Evidencias de Diseño y Evolución
+## Evidencia de Transición a H2 (Aspecto 6.5)
 
-- **Transición a H2 (Aspecto 6.5)**: en el commit `dcb8c64` se modificó únicamente `App.java` para sustituir `RepositorioEventosEnMemoria` por `RepositorioEventosH2`, demostrando que ni las entidades de `domain` ni los casos de uso de `application` cambian al reemplazar la persistencia. El esquema relacional se encuentra en `src/main/resources/co/edu/unillanos/campusfest/infrastructure/persistence/schema.sql` con claves primarias y foráneas (`eventos`, `reservas`, `asistencias`) y manejo de `SQLException` encapsulado en el adaptador.
-- **Corrección de sugerencia de IA (Aspecto 8.2)**: tras el commit `fd7cae8` que incluía una validación de vencimiento en el controlador de CU2, el commit `95eb04f` eliminó dicha lógica de la capa UI para delegar la regla al dominio (`Reserva`) a través del caso de uso `ReservarEntrada`.
+En el commit `dcb8c64` se modificó únicamente `App.java` para sustituir `new RepositorioEventosEnMemoria()` por `new RepositorioEventosH2()`, demostrando que ni las entidades de `domain` ni los casos de uso de `application` cambian al reemplazar el adaptador de persistencia. El esquema relacional está en `src/main/resources/co/edu/unillanos/campusfest/infrastructure/persistence/schema.sql` con claves primarias y foráneas (`eventos`, `reservas`, `asistencias`) y manejo de `SQLException` encapsulado dentro de `RepositorioEventosH2`.
+
+## Declaración de Uso de IA (Aspectos 8.1 y 8.2)
+
+### Herramientas usadas, propósito y clases (Aspecto 8.1)
+
+Durante el desarrollo del proyecto el equipo utilizó las siguientes herramientas de IA como apoyo, revisando manualmente el cumplimiento del contrato, los principios GRASP y la Arquitectura Limpia:
+
+- **Antigravity**: asistencia en la implementación de CU4 (`RegistrarIngreso`), controlador y vista JavaFX (`PantallaIngresoController`, `PantallaIngreso.fxml`), adaptador y esquema SQL de H2 (`RepositorioEventosH2`, `schema.sql`), verificación de pruebas unitarias, flujo de Git/PRs y documentación (`README.md`).
+- **Gemini**: apoyo en la estructuración inicial del proyecto Maven (`pom.xml`), entidades base (`Reserva`, `Asistencia`, `EstadoReserva`), puertos (`Reloj`, `RepositorioEventos`), casos de uso (`ConsultarCupos`, `ReservarEntrada`) y vistas FXML (`PantallaCupos.fxml`, `PantallaReserva.fxml`).
+- **Claude**: apoyo en la implementación de edición en dominio y caso de uso (`Evento.cambiarDatos`, `Evento.cambiarAforo`, `EditarEvento`), vista/estilos de CU3 (`PantallaEventoController`, `PantallaEvento.fxml`, `estilos.css`) y composición inicial de `App` y `Launcher`.
+
+### Propuesta de la IA que violaba el diseño y su corrección (Aspecto 8.2)
+
+En la implementación inicial de la interfaz de CU2 (`PantallaReservaController`, commit `fd7cae8`), la IA generó una validación de negocio directamente en el controlador JavaFX usando `LocalDateTime.now()` para comprobar si la última reserva solicitada ya había vencido (`!LocalDateTime.now().isBefore(ultimaReservaSolicitada.getVenceEn())`), además de mantener estado de la entidad en el controlador (`ultimaReservaSolicitada`).
+
+Esto violaba la **Arquitectura Limpia** (reglas de negocio en un adaptador UI), **GRASP Experto en Información / Controlador** y **Variaciones Protegidas** (uso directo del reloj del sistema en lugar del puerto `Reloj`).
+
+**Corrección realizada (commit `95eb04f`)**: se eliminó por completo la validación temporal, la referencia a `LocalDateTime.now()` y el campo `ultimaReservaSolicitada` de `PantallaReservaController`, delegando la verificación del plazo únicamente a la entidad `Reserva` a través del caso de uso `ReservarEntrada.confirmarReserva(...)`.
 
 ## Ejecución de Pruebas y Aplicación
 

@@ -63,11 +63,28 @@ public class Evento {
     }
 
     public void cambiarDatos(String nombre, LocalDateTime fecha, String lugar) {
-        throw new UnsupportedOperationException("Pendiente de implementar por Integrante 3");
+        if (nombre == null || nombre.isBlank()) {
+            throw new IllegalArgumentException("El nombre del evento no puede estar vacío.");
+        }
+        if (fecha == null) {
+            throw new IllegalArgumentException("La fecha del evento no puede ser nula.");
+        }
+        if (lugar == null || lugar.isBlank()) {
+            throw new IllegalArgumentException("El lugar del evento no puede estar vacío.");
+        }
+        this.nombre = nombre;
+        this.fecha = fecha;
+        this.lugar = lugar;
     }
 
     public void cambiarAforo(int nuevoAforo, LocalDateTime ahora) {
-        throw new UnsupportedOperationException("Pendiente de implementar por Integrante 3");
+        int ocupados = cuposOcupadosPorReservas(ahora);
+        int aforoMinimo = bloqueados + ocupados;
+        if (nuevoAforo < aforoMinimo) {
+            throw new IllegalStateException("Hay " + ocupados + " cupos ocupados por reservas y " + bloqueados
+                    + " bloqueados: el aforo no puede ser menor que " + aforoMinimo + ".");
+        }
+        this.aforo = nuevoAforo;
     }
 
     public String getId() {

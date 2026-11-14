@@ -13,10 +13,15 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import co.edu.unillanos.campusfest.application.port.RepositorioEventos;
+import co.edu.unillanos.campusfest.domain.Asistencia;
+import co.edu.unillanos.campusfest.domain.EstadoReserva;
 import co.edu.unillanos.campusfest.domain.Evento;
+import co.edu.unillanos.campusfest.domain.Reserva;
 
 public class RepositorioEventosH2 implements RepositorioEventos {
 
@@ -90,29 +95,39 @@ public class RepositorioEventosH2 implements RepositorioEventos {
                 int aforo = rs.getInt("aforo");
                 int bloqueados = rs.getInt("bloqueados");
 
-                Evento evento = new Evento(id, nombre, fecha, lugar, aforo, bloqueados);
-                cargarReservasYAsistencias(conn, evento);
-                return evento;
+                List<Reserva> reservas = cargarReservasYAsistencias(conn, id);
+                return new Evento(id, nombre, fecha, lugar, aforo, bloqueados, reservas);
             }
         } catch (SQLException e) {
             throw new IllegalStateException("Error al consultar el evento en H2.", e);
         }
     }
 
-    private void cargarReservasYAsistencias(Connection conn, Evento evento) throws SQLException {
+    private List<Reserva> cargarReservasYAsistencias(Connection conn, String eventoId) throws SQLException {
         String sql = "SELECT r.codigo, r.estudiante_id, r.vence_en, r.estado, a.hora "
                 + "FROM reservas r "
                 + "LEFT JOIN asistencias a ON r.codigo = a.codigo_reserva "
                 + "WHERE r.evento_id = ?";
+        List<Reserva> reservas = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, evento.getId());
+            ps.setString(1, eventoId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    // TODO: Reconstruir Reserva y Asistencia en Evento cuando Integrante 2 integre Evento.
-                    rs.getString("codigo");
+                    Timestamp tsAsistencia = rs.getTimestamp("hora");
+                    Asistencia asistencia = tsAsistencia != null
+                            ? new Asistencia(tsAsistencia.toLocalDateTime())
+                            : null;
+                    Reserva reserva = Reserva.reconstruir(
+                            rs.getString("codigo"),
+                            rs.getString("estudiante_id"),
+                            rs.getTimestamp("vence_en").toLocalDateTime(),
+                            EstadoReserva.valueOf(rs.getString("estado")),
+                            asistencia);
+                    reservas.add(reserva);
                 }
             }
         }
+        return reservas;
     }
 
     @Override
@@ -148,6 +163,26 @@ public class RepositorioEventosH2 implements RepositorioEventos {
     }
 
     private void guardarReservasYAsistencias(Connection conn, Evento evento) throws SQLException {
-        // TODO: Persistir reservas y asistencias en tablas reservas/asistencias cuando Integrante 2 integre Evento.
+        String sqlReserva = "MERGE INTO reservas (codigo, evento_id, estudiante_id, vence_en, estado) "
+                + "KEY(codigo) VALUES (?, ?, ?, ?, ?)";
+        String sqlAsistencia = "MERGE INTO asistencias (codigo_reserva, hora) KEY(codigo_reserva) VALUES (?, ?)";
+
+        try (PreparedStatement psReserva = conn.prepareStatement(sqlReserva);
+             PreparedStatement psAsistencia = conn.prepareStatement(sqlAsistencia)) {
+            for (Reserva reserva : evento.getReservas()) {
+                psReserva.setString(1, reserva.getCodigo());
+                psReserva.setString(2, evento.getId());
+                psReserva.setString(3, reserva.getEstudianteId());
+                psReserva.setTimestamp(4, Timestamp.valueOf(reserva.getVenceEn()));
+                psReserva.setString(5, reserva.getEstado().name());
+                psReserva.executeUpdate();
+
+                if (reserva.getAsistencia() != null) {
+                    psAsistencia.setString(1, reserva.getCodigo());
+                    psAsistencia.setTimestamp(2, Timestamp.valueOf(reserva.getAsistencia().getHora()));
+                    psAsistencia.executeUpdate();
+                }
+            }
+        }
     }
 }

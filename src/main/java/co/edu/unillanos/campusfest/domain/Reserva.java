@@ -26,6 +26,14 @@ public class Reserva {
         return new Reserva(codigoGenerado, estudianteId, ahora.plusMinutes(MINUTOS_PLAZO));
     }
 
+    public static Reserva reconstruir(String codigo, String estudianteId, LocalDateTime venceEn,
+                                      EstadoReserva estado, Asistencia asistencia) {
+        Reserva reserva = new Reserva(codigo, estudianteId, venceEn);
+        reserva.estado = estado;
+        reserva.asistencia = asistencia;
+        return reserva;
+    }
+
     public boolean ocupaCupo(LocalDateTime ahora) {
         actualizarVencimiento(ahora);
         if (estado == EstadoReserva.CONFIRMADA) {

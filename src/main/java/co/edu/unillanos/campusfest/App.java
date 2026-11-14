@@ -11,7 +11,7 @@ import co.edu.unillanos.campusfest.application.usecase.RegistrarIngreso;
 import co.edu.unillanos.campusfest.application.usecase.ReservarEntrada;
 import co.edu.unillanos.campusfest.domain.Evento;
 import co.edu.unillanos.campusfest.infrastructure.persistence.RelojDelSistema;
-import co.edu.unillanos.campusfest.infrastructure.persistence.RepositorioEventosEnMemoria;
+import co.edu.unillanos.campusfest.infrastructure.persistence.RepositorioEventosH2;
 import co.edu.unillanos.campusfest.infrastructure.ui.PantallaCuposController;
 import co.edu.unillanos.campusfest.infrastructure.ui.PantallaEventoController;
 import co.edu.unillanos.campusfest.infrastructure.ui.PantallaReservaController;
@@ -42,20 +42,22 @@ public class App extends Application {
 
     @Override
     public void init() {
-        // En Fase 3, iniciamos con RepositorioEventosEnMemoria y RelojDelSistema
-        this.repositorio = new RepositorioEventosEnMemoria();
+        // Fase 4: transición de memoria a persistencia en H2 sin tocar dominio ni casos de uso
+        this.repositorio = new RepositorioEventosH2();
         this.reloj = new RelojDelSistema();
 
-        // Precargar evento demo para pruebas inmediatas en la UI
-        Evento eventoDemo = new Evento(
-                "ev-1",
-                "Concierto de bienvenida CampusFest",
-                LocalDateTime.of(2026, 11, 28, 19, 0),
-                "Auditorio Barcelona",
-                120,
-                5
-        );
-        this.repositorio.guardar(eventoDemo);
+        // Precargar evento demo si aún no existe en la base de datos H2
+        if (this.repositorio.buscar("ev-1") == null) {
+            Evento eventoDemo = new Evento(
+                    "ev-1",
+                    "Concierto de bienvenida CampusFest",
+                    LocalDateTime.of(2026, 11, 28, 19, 0),
+                    "Auditorio Barcelona",
+                    120,
+                    5
+            );
+            this.repositorio.guardar(eventoDemo);
+        }
 
         // Inicializar los cuatro casos de uso
         this.consultarCupos = new ConsultarCupos(repositorio, reloj);

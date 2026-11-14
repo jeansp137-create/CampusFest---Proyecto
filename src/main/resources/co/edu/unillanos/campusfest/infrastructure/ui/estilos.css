@@ -1,0 +1,90 @@
+/* Estilos JavaFX para CampusFest */
+.root {
+    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+    -fx-font-size: 14px;
+    -fx-background-color: #f4f6f9;
+}
+
+.contenedor-principal {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 20px;
+}
+
+.titulo-seccion {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1e293b;
+    -fx-padding: 0 0 10px 0;
+}
+
+.boton-primario {
+    -fx-background-color: #2563eb;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+    -fx-background-radius: 6px;
+    -fx-padding: 8px 16px;
+    -fx-cursor: hand;
+}
+
+.boton-primario:hover {
+    -fx-background-color: #1d4ed8;
+}
+
+.boton-secundario {
+    -fx-background-color: #e2e8f0;
+    -fx-text-fill: #334155;
+    -fx-font-weight: bold;
+    -fx-background-radius: 6px;
+    -fx-padding: 8px 16px;
+    -fx-cursor: hand;
+}
+
+.boton-secundario:hover {
+    -fx-background-color: #cbd5e1;
+}
+
+.mensaje-resultado {
+    -fx-font-size: 13px;
+    -fx-text-fill: #0f172a;
+    -fx-font-style: italic;
+    -fx-padding: 5px 0 0 0;
+}
+
+.text-field {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #cbd5e1;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 6px 10px;
+}
+
+.text-field:focused {
+    -fx-border-color: #2563eb;
+}
+
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: #e2e8f0;
+}
+
+.tab {
+    -fx-background-color: #cbd5e1;
+    -fx-background-radius: 6px 6px 0 0;
+    -fx-padding: 6px 14px;
+}
+
+.tab:selected {
+    -fx-background-color: #ffffff;
+}
+
+.tab .tab-label {
+    -fx-text-fill: #334155;
+    -fx-font-weight: bold;
+}
+
+.tab:selected .tab-label {
+    -fx-text-fill: #2563eb;
+}

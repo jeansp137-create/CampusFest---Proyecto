@@ -4,12 +4,12 @@ Sistema de gestión de eventos universitarios desarrollado en **Java 21**, **Jav
 
 ## Integrantes del Equipo
 
-| Rol | Integrante | Responsabilidad Principal |
-| --- | --- | --- |
-| **Integrante 1** | Julián David Fernandez Ruiz | Configuración Maven, pruebas base, `Reserva`, `Asistencia`, `EstadoReserva`, puertos y CU1 (`ConsultarCupos` + `PantallaCupos`). |
-| **Integrante 2** | Juan Sebastian Correa Aguilera | `Evento`, `RepositorioEventosEnMemoria`, `RelojDelSistema` y CU2 (`ReservarEntrada` + `PantallaReserva`). |
-| **Integrante 3** | Diego Mauricio Lancheros Molina | Edición de aforo/datos en `Evento`, CU3 (`EditarEvento` + `PantallaEvento` + `estilos.css`), `App` inicial y `Launcher`. |
-| **Integrante 4** | Youbry Camilo Mendoza Martínez | CU4 (`RegistrarIngreso` + `PantallaIngreso`), persistencia relacional H2 (`schema.sql`, `RepositorioEventosH2`), transición a H2 en `App` y documentación. |
+| Integrante | Usuario GitHub | Rol en el Proyecto | Responsabilidad Principal |
+| --- | --- | --- | --- |
+| **Julián David Fernandez Ruiz** | `@jeansp137-create` | **Arquitecto Base y Desarrollador CU1** | Configuración Maven, pruebas unitarias base, dominio base (`Reserva`, `Asistencia`, `EstadoReserva`), puertos (`Reloj`, `RepositorioEventos`) y CU1 (`ConsultarCupos` + `PantallaCupos`). |
+| **Juan Sebastian Correa Aguilera** | `@mono21131` | **Desarrollador de Dominio Evento, Memoria y CU2** | Entidad `Evento` (disponibilidad, reservas y búsqueda), `RepositorioEventosEnMemoria`, `RelojDelSistema` y CU2 (`ReservarEntrada` + `PantallaReserva`). |
+| **Diego Mauricio Lancheros Molina** | `@Diegomau26` / `@dimalancheros` | **Desarrollador de Edición (CU3) y Composición UI** | Métodos de edición y aforo en `Evento`, CU3 (`EditarEvento` + `PantallaEvento` + `estilos.css`), ensamblaje inicial de `App` y `Launcher`. |
+| **Youbry Camilo Mendoza Martínez** | `@camilomendoza527-sketch` | **Desarrollador de Ingreso QR (CU4), Persistencia H2 y Documentación** | CU4 (`RegistrarIngreso` + `PantallaIngreso`), esquema relacional y adaptador H2 (`schema.sql`, `RepositorioEventosH2`), transición a H2 en `App` y documentación (`README.md`). |
 
 ## Arquitectura y Paquetes
 

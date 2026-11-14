@@ -15,7 +15,6 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import co.edu.unillanos.campusfest.application.port.RepositorioEventos;
 import co.edu.unillanos.campusfest.domain.Asistencia;
@@ -71,7 +70,12 @@ public class RepositorioEventosH2 implements RepositorioEventos {
                 throw new IllegalStateException("No se encontró el script SQL: " + RUTA_SCHEMA);
             }
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
-                return reader.lines().collect(Collectors.joining("\n"));
+                StringBuilder contenido = new StringBuilder();
+                String linea;
+                while ((linea = reader.readLine()) != null) {
+                    contenido.append(linea).append('\n');
+                }
+                return contenido.toString();
             }
         } catch (IOException e) {
             throw new IllegalStateException("Error al leer el script SQL de H2.", e);

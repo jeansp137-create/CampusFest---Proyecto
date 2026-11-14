@@ -14,6 +14,7 @@ import co.edu.unillanos.campusfest.infrastructure.persistence.RelojDelSistema;
 import co.edu.unillanos.campusfest.infrastructure.persistence.RepositorioEventosH2;
 import co.edu.unillanos.campusfest.infrastructure.ui.PantallaCuposController;
 import co.edu.unillanos.campusfest.infrastructure.ui.PantallaEventoController;
+import co.edu.unillanos.campusfest.infrastructure.ui.PantallaIngresoController;
 import co.edu.unillanos.campusfest.infrastructure.ui.PantallaReservaController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -35,10 +36,6 @@ public class App extends Application {
     private ReservarEntrada reservarEntrada;
     private EditarEvento editarEvento;
     private RegistrarIngreso registrarIngreso;
-
-    private PantallaCuposController pantallaCuposController;
-    private PantallaReservaController pantallaReservaController;
-    private PantallaEventoController pantallaEventoController;
 
     @Override
     public void init() {
@@ -64,11 +61,6 @@ public class App extends Application {
         this.reservarEntrada = new ReservarEntrada(repositorio, reloj);
         this.editarEvento = new EditarEvento(repositorio, reloj);
         this.registrarIngreso = new RegistrarIngreso(repositorio, reloj);
-
-        // Crear los controladores
-        this.pantallaCuposController = new PantallaCuposController(consultarCupos);
-        this.pantallaReservaController = new PantallaReservaController(reservarEntrada);
-        this.pantallaEventoController = new PantallaEventoController(editarEvento);
     }
 
     @Override
@@ -76,11 +68,11 @@ public class App extends Application {
         TabPane tabPane = new TabPane();
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
 
-        // Cargar vistas FXML de los casos de uso
-        Parent vistaCupos = cargarVista("/co/edu/unillanos/campusfest/infrastructure/ui/PantallaCupos.fxml", pantallaCuposController);
-        Parent vistaReserva = cargarVista("/co/edu/unillanos/campusfest/infrastructure/ui/PantallaReserva.fxml", pantallaReservaController);
-        Parent vistaEvento = cargarVista("/co/edu/unillanos/campusfest/infrastructure/ui/PantallaEvento.fxml", pantallaEventoController);
-        Parent vistaIngreso = cargarVistaIngreso();
+        // Cargar vistas FXML de los cuatro casos de uso
+        Parent vistaCupos = cargarVista("/co/edu/unillanos/campusfest/infrastructure/ui/PantallaCupos.fxml");
+        Parent vistaReserva = cargarVista("/co/edu/unillanos/campusfest/infrastructure/ui/PantallaReserva.fxml");
+        Parent vistaEvento = cargarVista("/co/edu/unillanos/campusfest/infrastructure/ui/PantallaEvento.fxml");
+        Parent vistaIngreso = cargarVista("/co/edu/unillanos/campusfest/infrastructure/ui/PantallaIngreso.fxml");
 
         tabPane.getTabs().add(new Tab("CU1 · Consultar Cupos", vistaCupos));
         tabPane.getTabs().add(new Tab("CU2 · Reservar Entrada", vistaReserva));
@@ -89,7 +81,6 @@ public class App extends Application {
 
         Scene scene = new Scene(tabPane, 650, 550);
 
-        // Aplicar hoja de estilos CSS si está disponible
         URL cssUrl = getClass().getResource("/co/edu/unillanos/campusfest/infrastructure/ui/estilos.css");
         if (cssUrl != null) {
             scene.getStylesheets().add(cssUrl.toExternalForm());
@@ -100,54 +91,27 @@ public class App extends Application {
         primaryStage.show();
     }
 
-    private Parent cargarVista(String rutaFxml, Object controlador) {
+    private Parent cargarVista(String rutaFxml) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(rutaFxml));
-            if (controlador != null) {
-                loader.setController(controlador);
-            }
-            return new ScrollPane(loader.load());
+            Parent vista = loader.load();
+            configurarControlador(loader.getController());
+            return new ScrollPane(vista);
         } catch (Exception e) {
-            try {
-                FXMLLoader loaderFallback = new FXMLLoader(getClass().getResource(rutaFxml));
-                Parent vista = loaderFallback.load();
-                Object ctrl = loaderFallback.getController();
-                if (ctrl instanceof PantallaCuposController c) {
-                    c.setCasoDeUso(consultarCupos);
-                } else if (ctrl instanceof PantallaReservaController c) {
-                    c.setCasoDeUso(reservarEntrada);
-                } else if (ctrl instanceof PantallaEventoController c) {
-                    c.setCasoDeUso(editarEvento);
-                }
-                return new ScrollPane(vista);
-            } catch (Exception ex) {
-                VBox errorBox = new VBox(new Label("Error cargando vista " + rutaFxml + ": " + ex.getMessage()));
-                return errorBox;
-            }
+            return new VBox(new Label("Error cargando vista " + rutaFxml + ": " + e.getMessage()));
         }
     }
 
-    private Parent cargarVistaIngreso() {
-        URL url = getClass().getResource("/co/edu/unillanos/campusfest/infrastructure/ui/PantallaIngreso.fxml");
-        if (url != null) {
-            try {
-                FXMLLoader loader = new FXMLLoader(url);
-                Parent vista = loader.load();
-                Object ctrl = loader.getController();
-                if (ctrl != null) {
-                    try {
-                        ctrl.getClass().getMethod("setCasoDeUso", RegistrarIngreso.class).invoke(ctrl, registrarIngreso);
-                    } catch (Exception ignored) {
-                    }
-                }
-                return new ScrollPane(vista);
-            } catch (Exception e) {
-                return new VBox(new Label("Error al cargar CU4: " + e.getMessage()));
-            }
+    private void configurarControlador(Object controlador) {
+        if (controlador instanceof PantallaCuposController c) {
+            c.setCasoDeUso(consultarCupos);
+        } else if (controlador instanceof PantallaReservaController c) {
+            c.setCasoDeUso(reservarEntrada);
+        } else if (controlador instanceof PantallaEventoController c) {
+            c.setCasoDeUso(editarEvento);
+        } else if (controlador instanceof PantallaIngresoController c) {
+            c.setCasoDeUso(registrarIngreso);
         }
-        VBox pendiente = new VBox(new Label("CU4 · Pantalla de Ingreso (se integra con la rama del Integrante 4)."));
-        pendiente.setStyle("-fx-padding: 20px;");
-        return pendiente;
     }
 
     public static void main(String[] args) {

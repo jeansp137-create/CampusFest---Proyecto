@@ -1,7 +1,5 @@
 package co.edu.unillanos.campusfest.infrastructure.ui;
 
-import java.time.LocalDateTime;
-
 import co.edu.unillanos.campusfest.application.usecase.ReservarEntrada;
 import co.edu.unillanos.campusfest.domain.Reserva;
 import javafx.fxml.FXML;
@@ -23,7 +21,13 @@ public class PantallaReservaController {
     private Label lblResultado;
 
     private ReservarEntrada reservarEntrada;
-    private Reserva ultimaReservaSolicitada;
+
+    public PantallaReservaController() {
+    }
+
+    public PantallaReservaController(ReservarEntrada reservarEntrada) {
+        this.reservarEntrada = reservarEntrada;
+    }
 
     public void setCasoDeUso(ReservarEntrada reservarEntrada) {
         this.reservarEntrada = reservarEntrada;
@@ -35,7 +39,6 @@ public class PantallaReservaController {
         String estudianteId = txtEstudianteId.getText().trim();
         try {
             Reserva reserva = reservarEntrada.solicitarReserva(eventoId, estudianteId);
-            this.ultimaReservaSolicitada = reserva;
             txtCodigoReserva.setText(reserva.getCodigo());
             lblResultado.setText("Reserva pendiente creada. Código: " + reserva.getCodigo());
         } catch (IllegalArgumentException | IllegalStateException e) {
@@ -48,10 +51,6 @@ public class PantallaReservaController {
         String eventoId = txtEventoId.getText().trim();
         String codigo = txtCodigoReserva.getText().trim();
         try {
-            if (ultimaReservaSolicitada != null && !LocalDateTime.now().isBefore(ultimaReservaSolicitada.getVenceEn())) {
-                lblResultado.setText("Error: La reserva ya venció según el reloj local.");
-                return;
-            }
             Reserva confirmada = reservarEntrada.confirmarReserva(eventoId, codigo);
             lblResultado.setText("Reserva confirmada con éxito. Código: " + confirmada.getCodigo());
         } catch (IllegalArgumentException | IllegalStateException e) {

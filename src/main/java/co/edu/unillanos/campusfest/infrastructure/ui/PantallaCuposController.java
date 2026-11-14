@@ -15,6 +15,13 @@ public class PantallaCuposController {
 
     private ConsultarCupos consultarCupos;
 
+    public PantallaCuposController() {
+    }
+
+    public PantallaCuposController(ConsultarCupos consultarCupos) {
+        this.consultarCupos = consultarCupos;
+    }
+
     public void setCasoDeUso(ConsultarCupos consultarCupos) {
         this.consultarCupos = consultarCupos;
     }

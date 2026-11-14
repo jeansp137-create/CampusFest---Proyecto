@@ -1,4 +1,4 @@
-﻿package co.edu.unillanos.campusfest.application.usecase;
+package co.edu.unillanos.campusfest.application.usecase;
 import java.time.LocalDateTime;
 import co.edu.unillanos.campusfest.application.port.Reloj;
 import co.edu.unillanos.campusfest.application.port.RepositorioEventos;

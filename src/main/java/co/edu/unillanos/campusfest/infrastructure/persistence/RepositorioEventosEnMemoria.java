@@ -1,4 +1,4 @@
-﻿package co.edu.unillanos.campusfest.infrastructure.persistence;
+package co.edu.unillanos.campusfest.infrastructure.persistence;
 import co.edu.unillanos.campusfest.application.port.RepositorioEventos;
 import co.edu.unillanos.campusfest.domain.Evento;
 public class RepositorioEventosEnMemoria implements RepositorioEventos {

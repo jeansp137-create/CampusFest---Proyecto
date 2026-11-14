@@ -1,4 +1,4 @@
-﻿package co.edu.unillanos.campusfest.domain;
+package co.edu.unillanos.campusfest.domain;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

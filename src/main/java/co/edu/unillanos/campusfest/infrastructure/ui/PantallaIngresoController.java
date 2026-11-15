@@ -12,6 +12,8 @@ public class PantallaIngresoController {
 
     private static final DateTimeFormatter FORMATO_HORA = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
+    private final RegistrarIngreso registrarIngreso;
+
     @FXML
     private TextField txtEventoId;
 
@@ -19,23 +21,21 @@ public class PantallaIngresoController {
     private TextField txtCodigoQr;
 
     @FXML
-    private Label lblResultado;
+    private Label etiquetaMensaje;
 
-    private RegistrarIngreso registrarIngreso;
-
-    public void setCasoDeUso(RegistrarIngreso registrarIngreso) {
+    public PantallaIngresoController(RegistrarIngreso registrarIngreso) {
         this.registrarIngreso = registrarIngreso;
     }
 
     @FXML
-    public void onRegistrarIngreso() {
+    public void onRegistrar() {
         String eventoId = txtEventoId.getText().trim();
         String codigo = txtCodigoQr.getText().trim();
         try {
             Asistencia asistencia = registrarIngreso.registrar(eventoId, codigo);
-            lblResultado.setText("Ingreso registrado (" + asistencia.getHora().format(FORMATO_HORA) + ")");
+            etiquetaMensaje.setText("Ingreso registrado (" + asistencia.getHora().format(FORMATO_HORA) + ")");
         } catch (IllegalArgumentException | IllegalStateException e) {
-            lblResultado.setText("Error: " + e.getMessage());
+            etiquetaMensaje.setText("Error: " + e.getMessage());
         }
     }
 }

@@ -8,6 +8,8 @@ import javafx.scene.control.TextField;
 
 public class PantallaReservaController {
 
+    private final ReservarEntrada reservarEntrada;
+
     @FXML
     private TextField txtEventoId;
 
@@ -18,43 +20,34 @@ public class PantallaReservaController {
     private TextField txtCodigoReserva;
 
     @FXML
-    private Label lblResultado;
-
-    private ReservarEntrada reservarEntrada;
-
-    public PantallaReservaController() {
-    }
+    private Label etiquetaMensaje;
 
     public PantallaReservaController(ReservarEntrada reservarEntrada) {
         this.reservarEntrada = reservarEntrada;
     }
 
-    public void setCasoDeUso(ReservarEntrada reservarEntrada) {
-        this.reservarEntrada = reservarEntrada;
-    }
-
     @FXML
-    public void onSolicitarReserva() {
+    public void onSolicitar() {
         String eventoId = txtEventoId.getText().trim();
         String estudianteId = txtEstudianteId.getText().trim();
         try {
             Reserva reserva = reservarEntrada.solicitarReserva(eventoId, estudianteId);
             txtCodigoReserva.setText(reserva.getCodigo());
-            lblResultado.setText("Reserva pendiente creada. Código: " + reserva.getCodigo());
+            etiquetaMensaje.setText("Reserva creada. Código: " + reserva.getCodigo());
         } catch (IllegalArgumentException | IllegalStateException e) {
-            lblResultado.setText("Error: " + e.getMessage());
+            etiquetaMensaje.setText("Error: " + e.getMessage());
         }
     }
 
     @FXML
-    public void onConfirmarReserva() {
+    public void onConfirmar() {
         String eventoId = txtEventoId.getText().trim();
         String codigo = txtCodigoReserva.getText().trim();
         try {
             Reserva confirmada = reservarEntrada.confirmarReserva(eventoId, codigo);
-            lblResultado.setText("Reserva confirmada con éxito. Código: " + confirmada.getCodigo());
+            etiquetaMensaje.setText("Reserva confirmada. Código: " + confirmada.getCodigo());
         } catch (IllegalArgumentException | IllegalStateException e) {
-            lblResultado.setText("Error: " + e.getMessage());
+            etiquetaMensaje.setText("Error: " + e.getMessage());
         }
     }
 }

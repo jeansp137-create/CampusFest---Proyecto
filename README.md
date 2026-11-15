@@ -6,10 +6,10 @@ Sistema de gestión de eventos universitarios desarrollado en **Java 21**, **Jav
 
 | Integrante | Usuario GitHub | Rol en el Proyecto | Responsabilidad Principal |
 | --- | --- | --- | --- |
-| **Julián David Fernandez Ruiz** | `@jeansp137-create` | **Arquitecto Base y Desarrollador CU1** | Configuración Maven, pruebas unitarias base, dominio base (`Reserva`, `Asistencia`, `EstadoReserva`), puertos (`Reloj`, `RepositorioEventos`) y CU1 (`ConsultarCupos` + `PantallaCupos`). |
-| **Juan Sebastian Correa Aguilera** | `@mono21131` | **Desarrollador de Dominio Evento, Memoria y CU2** | Entidad `Evento` (disponibilidad, reservas y búsqueda), `RepositorioEventosEnMemoria`, `RelojDelSistema` y CU2 (`ReservarEntrada` + `PantallaReserva`). |
-| **Diego Mauricio Lancheros Molina** | `@Diegomau26` / `@dimalancheros` | **Desarrollador de Edición (CU3) y Composición UI** | Métodos de edición y aforo en `Evento`, CU3 (`EditarEvento` + `PantallaEvento` + `estilos.css`), ensamblaje inicial de `App` y `Launcher`. |
-| **Youbry Camilo Mendoza Martínez** | `@camilomendoza527-sketch` | **Desarrollador de Ingreso QR (CU4), Persistencia H2 y Documentación** | CU4 (`RegistrarIngreso` + `PantallaIngreso`), esquema relacional y adaptador H2 (`schema.sql`, `RepositorioEventosH2`), transición a H2 en `App` y documentación (`README.md`). |
+| **Julián David Fernandez Ruiz** | `@jeansp137-create` | **Arquitecto Base y Desarrollador CU1** | Configuración Maven, pruebas unitarias base, dominio base (`Reserva`, `Asistencia`, `EstadoReserva`), puertos (`Reloj`, `RepositorioEventos`) y CU1 (`ConsultarCupos` + `PantallaCuposController`). |
+| **Juan Sebastian Correa Aguilera** | `@mono21131` | **Desarrollador de Dominio Evento, Memoria y CU2** | Entidad `Evento` (disponibilidad, reservas y búsqueda), `RepositorioEventosEnMemoria`, `RelojDelSistema` y CU2 (`ReservarEntrada` + `PantallaReservaController`). |
+| **Diego Mauricio Lancheros Molina** | `@Diegomau26` / `@dimalancheros` | **Desarrollador de Edición (CU3) y Composición UI** | Métodos de edición y aforo en `Evento`, CU3 (`EditarEvento` + `PantallaEventoController` + `estilos.css`), ensamblaje inicial de `App` y `Launcher`. |
+| **Youbry Camilo Mendoza Martínez** | `@camilomendoza527-sketch` | **Desarrollador de Ingreso QR (CU4), Persistencia H2 y Documentación** | CU4 (`RegistrarIngreso` + `PantallaIngresoController`), esquema relacional y adaptador H2 (`schema.sql`, `RepositorioEventosH2`), transición a H2 en `App` y documentación (`README.md`). |
 
 ## Arquitectura y Paquetes
 
@@ -18,9 +18,10 @@ Sistema de gestión de eventos universitarios desarrollado en **Java 21**, **Jav
 | **Entidades (Dominio)** | `co.edu.unillanos.campusfest.domain` | `Evento`, `Reserva`, `EstadoReserva`, `Asistencia`. Reglas de negocio puras, sin dependencias externas ni llamadas a `now()`. |
 | **Puertos** | `co.edu.unillanos.campusfest.application.port` | Interfaces `RepositorioEventos` y `Reloj`. |
 | **Casos de Uso** | `co.edu.unillanos.campusfest.application.usecase` | `ConsultarCupos` (CU1), `ReservarEntrada` (CU2), `EditarEvento` (CU3), `RegistrarIngreso` (CU4). |
-| **Adaptadores (Persistencia)** | `co.edu.unillanos.campusfest.infrastructure.persistence` | `RepositorioEventosEnMemoria`, `RepositorioEventosH2` (`schema.sql` con tablas `eventos`, `reservas`, `asistencias`) y `RelojDelSistema`. |
-| **Adaptadores (UI JavaFX)** | `co.edu.unillanos.campusfest.infrastructure.ui` | Controladores y vistas FXML/CSS (`PantallaCupos`, `PantallaReserva`, `PantallaEvento`, `PantallaIngreso`). |
-| **Raíz de Composición** | `co.edu.unillanos.campusfest` | `App` (inyecta dependencias concretas en los casos de uso y controladores) y `Launcher`. |
+| **Adaptadores (Persistencia)** | `co.edu.unillanos.campusfest.infrastructure.persistence` | `RepositorioEventosEnMemoria` y `RepositorioEventosH2` (`src/main/resources/db/schema.sql` con tablas `EVENTO`, `RESERVA`, `ASISTENCIA`). |
+| **Adaptadores (Reloj)** | `co.edu.unillanos.campusfest.infrastructure.reloj` | `RelojDelSistema` (única clase que invoca `LocalDateTime.now()`). |
+| **Adaptadores (UI JavaFX)** | `co.edu.unillanos.campusfest.infrastructure.ui` | Controladores (`PantallaCuposController`, `PantallaReservaController`, `PantallaEventoController`, `PantallaIngresoController`) y vistas FXML/CSS en `src/main/resources/co/edu/unillanos/campusfest/vistas/`. |
+| **Frameworks y Drivers** | `co.edu.unillanos.campusfest` | `App` (inyecta dependencias concretas en los casos de uso y controladores mediante `FXMLLoader.setController`) y `Launcher`. |
 
 ## Casos de Uso Implementados
 
@@ -31,7 +32,7 @@ Sistema de gestión de eventos universitarios desarrollado en **Java 21**, **Jav
 
 ## Evidencia de Transición a H2 (Aspecto 6.5)
 
-En el commit `dcb8c64` se modificó únicamente `App.java` para sustituir `new RepositorioEventosEnMemoria()` por `new RepositorioEventosH2()`, demostrando que ni las entidades de `domain` ni los casos de uso de `application` cambian al reemplazar el adaptador de persistencia. El esquema relacional está en `src/main/resources/co/edu/unillanos/campusfest/infrastructure/persistence/schema.sql` con claves primarias y foráneas (`eventos`, `reservas`, `asistencias`) y manejo de `SQLException` encapsulado dentro de `RepositorioEventosH2`.
+En el commit `dcb8c64` se modificó únicamente `App.java` para sustituir `new RepositorioEventosEnMemoria()` por `new RepositorioEventosH2(...)`, demostrando que ni las entidades de `domain` ni los casos de uso de `application` cambian al reemplazar el adaptador de persistencia. El esquema relacional está en `src/main/resources/db/schema.sql` con claves primarias y foráneas (`EVENTO`, `RESERVA`, `ASISTENCIA`) y manejo de `SQLException` encapsulado dentro de `RepositorioEventosH2`.
 
 ## Declaración de Uso de IA (Aspectos 8.1 y 8.2)
 
@@ -39,9 +40,9 @@ En el commit `dcb8c64` se modificó únicamente `App.java` para sustituir `new R
 
 Durante el desarrollo del proyecto el equipo utilizó las siguientes herramientas de IA como apoyo, revisando manualmente el cumplimiento del contrato, los principios GRASP y la Arquitectura Limpia:
 
-- **Antigravity**: asistencia en la implementación de CU4 (`RegistrarIngreso`), controlador y vista JavaFX (`PantallaIngresoController`, `PantallaIngreso.fxml`), adaptador y esquema SQL de H2 (`RepositorioEventosH2`, `schema.sql`), verificación de pruebas unitarias, flujo de Git/PRs y documentación (`README.md`).
-- **Gemini**: apoyo en la estructuración inicial del proyecto Maven (`pom.xml`), entidades base (`Reserva`, `Asistencia`, `EstadoReserva`), puertos (`Reloj`, `RepositorioEventos`), casos de uso (`ConsultarCupos`, `ReservarEntrada`) y vistas FXML (`PantallaCupos.fxml`, `PantallaReserva.fxml`).
-- **Claude**: apoyo en la implementación de edición en dominio y caso de uso (`Evento.cambiarDatos`, `Evento.cambiarAforo`, `EditarEvento`), vista/estilos de CU3 (`PantallaEventoController`, `PantallaEvento.fxml`, `estilos.css`) y composición inicial de `App` y `Launcher`.
+- **Antigravity**: asistencia en la implementación de CU4 (`RegistrarIngreso`), controlador y vista JavaFX (`PantallaIngresoController`, `pantalla-ingreso.fxml`), adaptador y esquema SQL de H2 (`RepositorioEventosH2`, `schema.sql`), verificación de pruebas unitarias, flujo de Git/PRs y documentación (`README.md`).
+- **Gemini**: apoyo en la estructuración inicial del proyecto Maven (`pom.xml`), entidades base (`Reserva`, `Asistencia`, `EstadoReserva`), puertos (`Reloj`, `RepositorioEventos`), casos de uso (`ConsultarCupos`, `ReservarEntrada`) y vistas FXML (`pantalla-cupos.fxml`, `pantalla-reserva.fxml`).
+- **Claude**: apoyo en la implementación de edición en dominio y caso de uso (`Evento.cambiarDatos`, `Evento.cambiarAforo`, `EditarEvento`), vista/estilos de CU3 (`PantallaEventoController`, `pantalla-evento.fxml`, `estilos.css`) y composición inicial de `App` y `Launcher`.
 
 ### Propuesta de la IA que violaba el diseño y su corrección (Aspecto 8.2)
 
@@ -53,7 +54,7 @@ Esto violaba la **Arquitectura Limpia** (reglas de negocio en un adaptador UI), 
 
 ## Ejecución de Pruebas y Aplicación
 
-### Pruebas unitarias (60 pruebas en 8 clases)
+### Pruebas unitarias
 ```bash
 mvn test
 ```

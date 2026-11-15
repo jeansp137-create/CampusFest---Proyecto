@@ -1,4 +1,4 @@
-package co.edu.unillanos.campusfest.infrastructure.persistence;
+package co.edu.unillanos.campusfest.infrastructure.reloj;
 
 import java.time.LocalDateTime;
 

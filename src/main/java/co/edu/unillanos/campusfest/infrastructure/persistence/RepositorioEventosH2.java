@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,35 +23,21 @@ import co.edu.unillanos.campusfest.domain.Reserva;
 
 public class RepositorioEventosH2 implements RepositorioEventos {
 
-    private static final String RUTA_SCHEMA =
-            "/co/edu/unillanos/campusfest/infrastructure/persistence/schema.sql";
+    private static final String RUTA_SCHEMA = "/db/schema.sql";
 
-    private final String jdbcUrl;
-    private final String usuario;
-    private final String clave;
+    private final Connection conexion;
 
-    public RepositorioEventosH2() {
-        this("jdbc:h2:./campusfest-db;AUTO_SERVER=TRUE", "sa", "");
-    }
-
-    public RepositorioEventosH2(String jdbcUrl) {
-        this(jdbcUrl, "sa", "");
-    }
-
-    public RepositorioEventosH2(String jdbcUrl, String usuario, String clave) {
-        this.jdbcUrl = jdbcUrl;
-        this.usuario = usuario;
-        this.clave = clave;
+    public RepositorioEventosH2(Connection conexion) {
+        if (conexion == null) {
+            throw new IllegalStateException("La conexión a la base de datos no puede ser nula.");
+        }
+        this.conexion = conexion;
         inicializarEsquema();
-    }
-
-    private Connection conectar() throws SQLException {
-        return DriverManager.getConnection(jdbcUrl, usuario, clave);
     }
 
     private void inicializarEsquema() {
         String sql = leerSchemaSql();
-        try (Connection conn = conectar(); Statement st = conn.createStatement()) {
+        try (Statement st = conexion.createStatement()) {
             for (String sentencia : sql.split(";")) {
                 String limpia = sentencia.trim();
                 if (!limpia.isEmpty()) {
@@ -84,9 +69,8 @@ public class RepositorioEventosH2 implements RepositorioEventos {
 
     @Override
     public Evento buscar(String eventoId) {
-        String sqlEvento = "SELECT id, nombre, fecha, lugar, aforo, bloqueados FROM eventos WHERE id = ?";
-        try (Connection conn = conectar();
-             PreparedStatement ps = conn.prepareStatement(sqlEvento)) {
+        String sqlEvento = "SELECT id, nombre, fecha, lugar, aforo, bloqueados FROM EVENTO WHERE id = ?";
+        try (PreparedStatement ps = conexion.prepareStatement(sqlEvento)) {
             ps.setString(1, eventoId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) {
@@ -99,7 +83,7 @@ public class RepositorioEventosH2 implements RepositorioEventos {
                 int aforo = rs.getInt("aforo");
                 int bloqueados = rs.getInt("bloqueados");
 
-                List<Reserva> reservas = cargarReservasYAsistencias(conn, id);
+                List<Reserva> reservas = cargarReservasYAsistencias(id);
                 return new Evento(id, nombre, fecha, lugar, aforo, bloqueados, reservas);
             }
         } catch (SQLException e) {
@@ -107,13 +91,13 @@ public class RepositorioEventosH2 implements RepositorioEventos {
         }
     }
 
-    private List<Reserva> cargarReservasYAsistencias(Connection conn, String eventoId) throws SQLException {
+    private List<Reserva> cargarReservasYAsistencias(String eventoId) throws SQLException {
         String sql = "SELECT r.codigo, r.estudiante_id, r.vence_en, r.estado, a.hora "
-                + "FROM reservas r "
-                + "LEFT JOIN asistencias a ON r.codigo = a.codigo_reserva "
+                + "FROM RESERVA r "
+                + "LEFT JOIN ASISTENCIA a ON r.codigo = a.codigo_reserva "
                 + "WHERE r.evento_id = ?";
         List<Reserva> reservas = new ArrayList<>();
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, eventoId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -139,12 +123,12 @@ public class RepositorioEventosH2 implements RepositorioEventos {
         if (evento == null) {
             throw new IllegalArgumentException("El evento no puede ser nulo.");
         }
-        String sqlEvento = "MERGE INTO eventos (id, nombre, fecha, lugar, aforo, bloqueados) "
+        String sqlEvento = "MERGE INTO EVENTO (id, nombre, fecha, lugar, aforo, bloqueados) "
                 + "KEY(id) VALUES (?, ?, ?, ?, ?, ?)";
-        try (Connection conn = conectar()) {
-            boolean autoCommitOriginal = conn.getAutoCommit();
-            conn.setAutoCommit(false);
-            try (PreparedStatement ps = conn.prepareStatement(sqlEvento)) {
+        try {
+            boolean autoCommitOriginal = conexion.getAutoCommit();
+            conexion.setAutoCommit(false);
+            try (PreparedStatement ps = conexion.prepareStatement(sqlEvento)) {
                 ps.setString(1, evento.getId());
                 ps.setString(2, evento.getNombre());
                 ps.setTimestamp(3, Timestamp.valueOf(evento.getFecha()));
@@ -153,26 +137,26 @@ public class RepositorioEventosH2 implements RepositorioEventos {
                 ps.setInt(6, evento.getBloqueados());
                 ps.executeUpdate();
 
-                guardarReservasYAsistencias(conn, evento);
-                conn.commit();
+                guardarReservasYAsistencias(evento);
+                conexion.commit();
             } catch (SQLException e) {
-                conn.rollback();
+                conexion.rollback();
                 throw e;
             } finally {
-                conn.setAutoCommit(autoCommitOriginal);
+                conexion.setAutoCommit(autoCommitOriginal);
             }
         } catch (SQLException e) {
             throw new IllegalStateException("Error al guardar el evento en H2.", e);
         }
     }
 
-    private void guardarReservasYAsistencias(Connection conn, Evento evento) throws SQLException {
-        String sqlReserva = "MERGE INTO reservas (codigo, evento_id, estudiante_id, vence_en, estado) "
+    private void guardarReservasYAsistencias(Evento evento) throws SQLException {
+        String sqlReserva = "MERGE INTO RESERVA (codigo, evento_id, estudiante_id, vence_en, estado) "
                 + "KEY(codigo) VALUES (?, ?, ?, ?, ?)";
-        String sqlAsistencia = "MERGE INTO asistencias (codigo_reserva, hora) KEY(codigo_reserva) VALUES (?, ?)";
+        String sqlAsistencia = "MERGE INTO ASISTENCIA (codigo_reserva, hora) KEY(codigo_reserva) VALUES (?, ?)";
 
-        try (PreparedStatement psReserva = conn.prepareStatement(sqlReserva);
-             PreparedStatement psAsistencia = conn.prepareStatement(sqlAsistencia)) {
+        try (PreparedStatement psReserva = conexion.prepareStatement(sqlReserva);
+             PreparedStatement psAsistencia = conexion.prepareStatement(sqlAsistencia)) {
             for (Reserva reserva : evento.getReservas()) {
                 psReserva.setString(1, reserva.getCodigo());
                 psReserva.setString(2, evento.getId());

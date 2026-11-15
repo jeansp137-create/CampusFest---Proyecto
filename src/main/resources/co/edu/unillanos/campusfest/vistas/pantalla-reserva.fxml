@@ -8,7 +8,6 @@
 
 <VBox spacing="12.0" xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="co.edu.unillanos.campusfest.infrastructure.ui.PantallaReservaController"
       styleClass="contenedor-principal">
     <padding>
         <Insets top="20.0" right="20.0" bottom="20.0" left="20.0"/>
@@ -20,11 +19,11 @@
 
     <Label text="ID del Estudiante (ej. est-1):"/>
     <TextField fx:id="txtEstudianteId" promptText="Ingrese el ID del estudiante"/>
-    <Button text="Solicitar Reserva" onAction="#onSolicitarReserva" styleClass="boton-primario"/>
+    <Button text="Solicitar Reserva" onAction="#onSolicitar" styleClass="boton-primario"/>
 
     <Label text="Código de Reserva:"/>
     <TextField fx:id="txtCodigoReserva" promptText="Ingrese el código para confirmar"/>
-    <Button text="Confirmar Reserva" onAction="#onConfirmarReserva" styleClass="boton-primario"/>
+    <Button text="Confirmar Reserva" onAction="#onConfirmar" styleClass="boton-primario"/>
 
-    <Label fx:id="lblResultado" text="Ingrese los datos para solicitar o confirmar su reserva." styleClass="mensaje-resultado"/>
+    <Label fx:id="etiquetaMensaje" text="Ingrese los datos para solicitar o confirmar su reserva." styleClass="mensaje-resultado"/>
 </VBox>

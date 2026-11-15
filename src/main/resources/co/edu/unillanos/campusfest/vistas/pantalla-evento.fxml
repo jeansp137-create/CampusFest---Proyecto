@@ -9,7 +9,6 @@
 
 <VBox spacing="12.0" xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="co.edu.unillanos.campusfest.infrastructure.ui.PantallaEventoController"
       styleClass="contenedor-principal">
     <padding>
         <Insets top="20.0" right="20.0" bottom="20.0" left="20.0"/>
@@ -37,6 +36,5 @@
 
     <Button text="Guardar Cambios" onAction="#onEditar" styleClass="boton-primario"/>
 
-    <Label fx:id="lblResultado" text="Cargue un evento para editar sus datos." styleClass="mensaje-resultado"/>
-    <Label fx:id="etiquetaMensaje" text="" styleClass="mensaje-resultado" visible="false" managed="false"/>
+    <Label fx:id="etiquetaMensaje" text="Cargue un evento para editar sus datos." styleClass="mensaje-resultado"/>
 </VBox>

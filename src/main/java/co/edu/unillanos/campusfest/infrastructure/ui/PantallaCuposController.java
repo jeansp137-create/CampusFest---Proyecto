@@ -7,22 +7,15 @@ import javafx.scene.control.TextField;
 
 public class PantallaCuposController {
 
+    private final ConsultarCupos consultarCupos;
+
     @FXML
     private TextField txtEventoId;
 
     @FXML
-    private Label lblResultado;
-
-    private ConsultarCupos consultarCupos;
-
-    public PantallaCuposController() {
-    }
+    private Label etiquetaMensaje;
 
     public PantallaCuposController(ConsultarCupos consultarCupos) {
-        this.consultarCupos = consultarCupos;
-    }
-
-    public void setCasoDeUso(ConsultarCupos consultarCupos) {
         this.consultarCupos = consultarCupos;
     }
 
@@ -31,9 +24,9 @@ public class PantallaCuposController {
         String eventoId = txtEventoId.getText().trim();
         try {
             int disponibles = consultarCupos.consultar(eventoId);
-            lblResultado.setText("Cupos disponibles: " + disponibles);
+            etiquetaMensaje.setText("Cupos disponibles: " + disponibles);
         } catch (IllegalArgumentException | IllegalStateException e) {
-            lblResultado.setText("Error: " + e.getMessage());
+            etiquetaMensaje.setText("Error: " + e.getMessage());
         }
     }
 }

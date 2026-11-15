@@ -22,9 +22,6 @@ public class RegistrarIngreso {
             throw new IllegalArgumentException("El evento no existe: " + eventoId);
         }
         Reserva reserva = evento.buscarReservaPorCodigo(codigo);
-        if (reserva == null) {
-            throw new IllegalArgumentException("La reserva no pertenece al evento: " + codigo);
-        }
         Asistencia asistencia = reserva.registrarIngreso(reloj.ahora());
         repositorio.guardar(evento);
         return asistencia;

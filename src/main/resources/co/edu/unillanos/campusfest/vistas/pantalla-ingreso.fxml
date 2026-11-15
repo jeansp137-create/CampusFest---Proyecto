@@ -8,7 +8,6 @@
 
 <VBox spacing="12.0" xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="co.edu.unillanos.campusfest.infrastructure.ui.PantallaIngresoController"
       styleClass="contenedor-principal">
     <padding>
         <Insets top="20.0" right="20.0" bottom="20.0" left="20.0"/>
@@ -19,6 +18,6 @@
     <TextField fx:id="txtEventoId" promptText="Ingrese el ID del evento" text="ev-1"/>
     <Label text="Código QR de la Reserva:"/>
     <TextField fx:id="txtCodigoQr" promptText="Escanee o ingrese el código de la reserva"/>
-    <Button text="Registrar Ingreso" onAction="#onRegistrarIngreso" styleClass="boton-primario"/>
-    <Label fx:id="lblResultado" text="Ingrese el evento y el código QR." styleClass="mensaje-resultado"/>
+    <Button text="Registrar Ingreso" onAction="#onRegistrar" styleClass="boton-primario"/>
+    <Label fx:id="etiquetaMensaje" text="Ingrese el evento y el código QR." styleClass="mensaje-resultado"/>
 </VBox>
